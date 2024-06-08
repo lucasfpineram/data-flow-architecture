@@ -8,6 +8,7 @@ from td7.custom_types import Records
 
 PHONE_PROBABILITY = 0.7
 
+# defino una clase con distintos metodos que generan data para nuestras distintas tablas
 
 class DataGenerator:
     def __init__(self):
@@ -103,3 +104,10 @@ class DataGenerator:
                 }
             )
         return sessions
+    
+
+    ######################################################################################
+    
+    #aca deberiamos definir las funciones adecuadas para generar datos para nuestras tablas
+    
+    ########################################################################################

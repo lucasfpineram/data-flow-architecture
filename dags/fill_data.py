@@ -33,6 +33,12 @@ def generate_data(base_time: str, n: int):
     )
     schema.insert(sessions, "sessions")
 
+    ######################################################################################
+    
+    #aca deberiamos cargar todas nuestras tablas con los datos generados en data_generator
+    
+    ########################################################################################
+
 
 with DAG(
     "fill_data",
