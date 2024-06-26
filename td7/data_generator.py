@@ -14,16 +14,19 @@ class DataGenerator:
     def __init__(self):
         """Instantiates faker instance"""
         self.fake = Faker()
-        #self.fake.add_provider(address)
-        #self.fake.add_provider(date_time)
         self.fake.add_provider(internet)
-        #self.fake.add_provider(passport)
         self.fake.add_provider(phone_number)
         self.brand_partnerships = {
             "Toyota": True,
-            "Hyundai": True,
-            "Nissan": True,
             "Ford": True,
+            "BMW": False,
+            "Audi": False,
+            "Honda": True,
+            "Mercedes": False,
+            "Chevrolet": False,
+            "Volkswagen": False,
+            "Hyundai": True,
+            "Nissan": True
         }
 
 #     def generate_people(self, n: int) -> Records:
@@ -171,31 +174,26 @@ class DataGenerator:
             )
         return conductores
 
-    def generate_partnership(self, n: int) -> Records:
-        """Generates n partnerships with car brands.
+    def generate_partnership(self) -> Records:
+            """Generates partnerships with car brands.
+            genera tantos registros como marcas haya en el diccionario brand_partnership
 
-        Parameters
-        ----------
-        n : int
-            Number of partnerships to generate.
-
-        Returns
-        -------
-        List[Dict[str, Any]]
-            List of dicts that include marca (car brand) and es_partner.
-        """
-        car_brands = ["Toyota", "Ford", "BMW", "Audi", "Honda", "Mercedes", "Chevrolet", "Volkswagen", "Hyundai", "Nissan"]
-        partnerships = []
-        for _ in range(n):
-            marca = self.fake.random_element(elements=car_brands)
-            es_partner = self.brand_partnerships.get(marca, False) # brand_partnerships es un diccionario en el inicializador con las marcas que son partners
-            partnerships.append(
-                {
-                    "marca": marca,
-                    "es_partner": es_partner,
-                }
-            )
-        return partnerships
+            Returns
+            -------
+            List[Dict[str, Any]]
+                List of dicts that include marca (car brand) and es_partner.
+            """
+            car_brands = list(self.brand_partnerships.keys())
+            partnerships = []
+            for marca in car_brands:
+                es_partner = self.brand_partnerships.get(marca, False) # busca el valor asociado a la clave marca en el diccionario brand_partnerships. Si la clave marca no se encuentra en el diccionario, devuelve el valor False por defecto.
+                partnerships.append(
+                    {
+                        "marca": marca,
+                        "es_partner": es_partner,
+                    }
+                )
+            return partnerships
 
     def generate_modelo_vehiculo(self, n: int) -> Records:
         """Generates n modelo_vehiculos.
@@ -216,7 +214,7 @@ class DataGenerator:
         for _ in range(n):
             marca = self.fake.random_element(elements=car_brands)
             modelo = self.fake.random_element(elements=self.get_modelos(marca))
-            tipo_carroceria, apto_discapacitado, vclase_economica, emision_rating, seguridad_rating = self.get_model_attributes(marca, modelo)
+            tipo_carroceria, apto_discapacitado, vclase_economica, emision_rating, seguridad_rating = self.get_atributos_modelos(marca, modelo)
             modelo_vehiculos.append(
                 {
                     "modelo": modelo,
@@ -265,7 +263,7 @@ class DataGenerator:
             return ["Altima", "Rogue", "Sentra", "Pathfinder", "Maxima", "Murano", "Frontier", "Titan", "Leaf"]
         # Agregar más marcas y modelos según sea necesario
 
-    def get_model_attributes(self, marca: str, modelo: str) -> tuple:
+    def get_atributos_modelos(self, marca: str, modelo: str) -> tuple:
         """Returns model attributes for a given brand and model.
 
         Parameters
@@ -281,21 +279,105 @@ class DataGenerator:
             Tuple containing tipo_carroceria, apto_discapacitado, vclase_economica, and emision_rating.
         """
         if marca == "Toyota":
-            if modelo in ["Prius", "Tacoma"]:
-                return "Sedan", True, "Economy", "Medio", 3
-            elif modelo in ["RAV4", "Highlander"]:
-                return "Suv", False, "Mid-range", "Bajo", 4
+            if modelo in ["Corolla", "Camry", "Avalon"]:
+                return "Sedan", False, "Mid-range", "Medio", 4
+            elif modelo in ["RAV4", "Highlander", "4Runner"]:
+                return "SUV", False, "Mid-range", "Bajo", 4
+            elif modelo == "Tacoma":
+                return "Truck", False, "Mid-range", "Medio", 3
+            elif modelo == "Prius":
+                return "Sedan", True, "Economy", "Alto", 5
+            elif modelo == "Sienna":
+                return "Minivan", True, "Mid-range", "Medio", 3
         elif marca == "Ford":
-            if modelo in ["Mustang", "F-150"]:
-                return "Coupe", False, "Performance", "Alto", 2
-            elif modelo in ["Explorer", "Escape"]:
-                return "Suv", False, "Mid-range", "Bajo", 4
+            if modelo in ["Mustang", "Fusion"]:
+                return "Coupe", False, "Performance", "Alto", 3
+            elif modelo in ["F-150", "Ranger"]:
+                return "Truck", False, "Mid-range", "Medio", 4
+            elif modelo in ["Explorer", "Escape", "Edge"]:
+                return "SUV", False, "Mid-range", "Bajo", 4
+            elif modelo in ["Focus", "Expedition"]:
+                return "Sedan", False, "Economy", "Medio", 3
+        elif marca == "BMW":
+            if modelo in ["3 Series", "5 Series", "7 Series"]:
+                return "Sedan", False, "Luxury", "Medio", 5
+            elif modelo in ["X3", "X5", "X1"]:
+                return "SUV", False, "Luxury", "Bajo", 4
+            elif modelo in ["Z4", "M3", "i8"]:
+                return "Coupe", False, "Performance", "Alto", 5
+        elif marca == "Audi":
+            if modelo in ["A4", "A6", "A3", "A5"]:
+                return "Sedan", False, "Luxury", "Medio", 4
+            elif modelo in ["Q5", "Q7", "Q3"]:
+                return "SUV", False, "Luxury", "Bajo", 5
+            elif modelo in ["TT", "RS5"]:
+                return "Coupe", False, "Performance", "Alto", 4
+        elif marca == "Honda":
+            if modelo in ["Accord", "Civic", "Insight"]:
+                return "Sedan", False, "Mid-range", "Medio", 4
+            elif modelo in ["CR-V", "Pilot", "HR-V"]:
+                return "SUV", False, "Mid-range", "Bajo", 5
+            elif modelo in ["Odyssey", "Ridgeline"]:
+                return "Minivan", True, "Mid-range", "Medio", 3
+            elif modelo == "Fit":
+                return "Hatchback", True, "Economy", "Alto", 4
+        elif marca == "Mercedes":
+            if modelo in ["C-Class", "E-Class", "S-Class"]:
+                return "Sedan", False, "Luxury", "Medio", 5
+            elif modelo in ["GLC", "GLE", "GLA"]:
+                return "SUV", False, "Luxury", "Bajo", 4
+            elif modelo in ["A-Class", "CLA"]:
+                return "Sedan", False, "Luxury", "Alto", 4
+            elif modelo == "AMG GT":
+                return "Coupe", False, "Performance", "Alto", 5
+        elif marca == "Chevrolet":
+            if modelo in ["Silverado", "Colorado", "Suburban"]:
+                return "Truck", False, "Mid-range", "Medio", 4
+            elif modelo in ["Equinox", "Traverse"]:
+                return "SUV", False, "Mid-range", "Bajo", 4
+            elif modelo in ["Malibu", "Impala"]:
+                return "Sedan", False, "Mid-range", "Medio", 4
+            elif modelo in ["Camaro"]:
+                return "Coupe", False, "Performance", "Alto", 5
+            elif modelo == "Bolt EV":
+                return "Hatchback", True, "Economy", "Alto", 5
+        elif marca == "Volkswagen":
+            if modelo in ["Jetta", "Passat", "Arteon"]:
+                return "Sedan", False, "Mid-range", "Medio", 4
+            elif modelo in ["Golf", "Golf GTI"]:
+                return "Hatchback", False, "Mid-range", "Bajo", 4
+            elif modelo in ["Tiguan", "Atlas"]:
+                return "SUV", False, "Mid-range", "Bajo", 4
+            elif modelo == "Touareg":
+                return "SUV", False, "Luxury", "Alto", 5
+        elif marca == "Hyundai":
+            if modelo in ["Sonata", "Elantra", "Accent"]:
+                return "Sedan", False, "Mid-range", "Medio", 4
+            elif modelo in ["Tucson", "Santa Fe", "Venue"]:
+                return "SUV", False, "Mid-range", "Bajo", 4
+            elif modelo in ["Palisade"]:
+                return "SUV", False, "Luxury", "Alto", 5
+            elif modelo in ["Veloster"]:
+                return "Coupe", False, "Performance", "Alto", 4
+        elif marca == "Nissan":
+            if modelo in ["Altima", "Maxima"]:
+                return "Sedan", False, "Mid-range", "Medio", 4
+            elif modelo in ["Rogue", "Murano"]:
+                return "SUV", False, "Mid-range", "Bajo", 4
+            elif modelo in ["Sentra"]:
+                return "Sedan", False, "Economy", "Medio", 3
+            elif modelo in ["Pathfinder", "Frontier", "Titan"]:
+                return "Truck", False, "Mid-range", "Medio", 4
+            elif modelo == "Leaf":
+                return "Hatchback", False, "Economy", "Alto", 5
+        else:
+            return "", False, "", "", 0
         # Agregar más marcas con modelos y atributos correspondientes
 
-# Ejemplo de uso
 # generator = DataGenerator()
-# modelo_vehiculos = generator.generate_modelo_vehiculo(10)  # Generar 10 vehículos modelo
-# print(modelo_vehiculos)
+# modelos = generator.generate_modelo_vehiculo(10)
+# for modelo in modelos:
+#     print(modelo)
 
 
     def generate_vehiculo(self, n: int) -> Records:
@@ -352,7 +434,7 @@ class DataGenerator:
                 )
         return conductor_vehiculo
 
-    def generate_viaje(self, n: int, conductores: List[Dict[str, Any]], vehiculos: List[Dict[str, Any]], pasajeros: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def generate_viaje(self, conductores, vehiculos,  pasajeros) -> Records:
         """Generates n viajes.
 
         Parameters
@@ -365,8 +447,25 @@ class DataGenerator:
             List of vehiculos.
         pasajeros : list
             List of pas"""
+        viajes = []
+        for _ in range(n):
+            id_viaje = str(uuid.uuid4())  # Genera un ID único para el conductor
+            viajes.append(
+                {
+                    "ID_viaje": id_viaje,
+                    "origen": self.fake.city()
+                    "destino": self.fake.city()
+                    "fecha_hora": self.fake.date_time_this_decade(before_now=True, after_now=False) # fecha aleatoria dentro de la ultima decada. ej:2015-07-15 10:24:36
+                    "estado": self.random.choice(['completado', 'en proceso', 'cancelado'])
+                    "calificacion": self.random.randint(0, 5)
+                    "ID_pasajero": pasajeros["ID_pasajero"]
+                    "ID_conductor": conductores["ID_conductor"]
+                    "patente": 
+                }
+            )
+        return viajes
         
-    def generate_viaje(self, n: int, conductores: List[Dict[str, Any]], vehiculos: List[Dict[str, Any]], pasajeros: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def generate_pago(self, n: int, conductores: List[Dict[str, Any]], vehiculos: List[Dict[str, Any]], pasajeros: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Generates n viajes.
 
         Parameters

@@ -1,7 +1,7 @@
 from typing import Optional
 
-from td7.custom_types import Records
-from td7.database import Database
+from custom_types import Records
+from database import Database
 
 class Schema:
     def __init__(self):
