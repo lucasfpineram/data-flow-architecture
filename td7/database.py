@@ -1,8 +1,8 @@
 import pandas as pd 
 from sqlalchemy import create_engine
 
-from td7.custom_types import Records
-from td7.config import POSTGRES_CONN_STRING
+from custom_types import Records
+from config import POSTGRES_CONN_STRING
 
 class Database:
     """Class to interact with the database."""
