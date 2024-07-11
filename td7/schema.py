@@ -16,28 +16,28 @@ class Schema:
 # Estos métodos recuperan todos los registros de las tablas  y ejecuta una consulta SQL para seleccionarlos 
 # todos devolviendo los resultados.
     def get_pasajero(self) -> Records:
-        return self.db.run_select("SELECT * FROM Pasajero")
+        return self.db.run_select("SELECT * FROM pasajero")
     
     def get_conductor(self) -> Records:
-        return self.db.run_select("SELECT * FROM Conductor")
+        return self.db.run_select("SELECT * FROM conductor")
     
     def get_partnership(self) -> Records:
-        return self.db.run_select("SELECT * FROM Partnership")
+        return self.db.run_select("SELECT * FROM partnership")
     
     def get_modelovehiculo(self) -> Records:
-        return self.db.run_select("SELECT * FROM ModeloVehiculo")
+        return self.db.run_select("SELECT * FROM modelovehiculo")
 
     def get_vehiculo(self) -> Records:
-        return self.db.run_select("SELECT * FROM Vehiculo")
+        return self.db.run_select("SELECT * FROM vehiculo")
     
     def get_conductorvehiculo(self) -> Records:
-        return self.db.run_select("SELECT * FROM ConductorVehiculo")
+        return self.db.run_select("SELECT * FROM conductorvehiculo")
     
     def get_viaje(self) -> Records:
-        return self.db.run_select("SELECT * FROM Viaje")
+        return self.db.run_select("SELECT * FROM viaje")
     
     def get_pago(self) -> Records:
-        return self.db.run_select("SELECT * FROM Pago")
+        return self.db.run_select("SELECT * FROM pago")
 
 # Este método inserta registros en una tabla específica.
 # Toma dos argumentos: records, que son los registros a insertar, y table, que es el nombre de 

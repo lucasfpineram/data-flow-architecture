@@ -3,10 +3,13 @@ import random
 from faker import Faker
 from faker.providers import address, date_time, internet, passport, phone_number
 import uuid
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from custom_types import Records
 
 PHONE_PROBABILITY = 0.7
-# Faker.seed(1234) # fijo una seed para que genere los mismos datos
+Faker.seed(1234) # fijo una seed para que genere los mismos datos
 
 # defino una clase con distintos metodos que generan data para nuestras distintas tablas
 class DataGenerator:
@@ -34,7 +37,7 @@ class DataGenerator:
             id_pasajero = str(uuid.uuid4())  # Genera un ID único para el pasajero
             pasajeros.append(
                 {
-                    "ID_pasajero": id_pasajero,
+                    "id_pasajero": id_pasajero,
                     "nombre": self.fake.name(),
                     "telefono": self.fake.phone_number(),
                     "correo_electronico": self.fake.email(),
@@ -48,7 +51,7 @@ class DataGenerator:
             id_conductor = str(uuid.uuid4())  # Genera un ID único para el conductor
             conductores.append(
                 {
-                    "ID_conductor": id_conductor,
+                    "id_conductor": id_conductor,
                     "nombre": self.fake.name(),
                     "telefono": self.fake.phone_number(),
                     "correo_electronico": self.fake.email(),
@@ -204,8 +207,8 @@ class DataGenerator:
                 return "Truck", False, "Mid-range", "Medio", 4
             elif modelo == "Leaf":
                 return "Hatchback", False, "Economy", "Alto", 5
-        else:
-            return "", False, "", "", 0
+        return "Unknown", False, "Unknown", "Unknown", 0
+            
 
     def generate_vehiculo(self, n: int) -> Records:
         car_brands = ["Toyota", "Ford", "BMW", "Audi", "Honda", "Mercedes", "Chevrolet", "Volkswagen", "Hyundai", "Nissan"]
@@ -235,7 +238,7 @@ class DataGenerator:
             for vehiculo in vehiculos_seleccionados:
                 conductor_vehiculo.append(
                     {
-                        "ID_conductor": conductor["ID_conductor"],
+                        "id_conductor": conductor["id_conductor"],
                         "patente": vehiculo["patente"],
                         "estado": self.fake.boolean(),
                     }
@@ -251,14 +254,14 @@ class DataGenerator:
             
             viajes.append(
                 {
-                    "ID_viaje": id_viaje,
+                    "id_viaje": id_viaje,
                     "origen": self.fake.address(),
                     "destino": self.fake.address(),
                     "fecha_hora": self.fake.date_time_this_decade(before_now=True, after_now=False),  # fecha aleatoria dentro de la última década
                     "estado": random.choice(['Completado', 'Cancelado']),
                     "calificacion": random.randint(0, 5),
-                    "ID_pasajero": pasajero["ID_pasajero"],
-                    "ID_conductor": conductor_vehiculo["ID_conductor"],
+                    "id_pasajero": pasajero["id_pasajero"],
+                    "id_conductor": conductor_vehiculo["id_conductor"],
                     "patente": conductor_vehiculo["patente"]
                 }
             )
@@ -272,10 +275,10 @@ class DataGenerator:
                 monto = round(self.fake.random.uniform(2000, 22000), 0)  
                 metodo_pago = self.fake.random_element(elements=('Tarjeta de credito', 'Tarjeta de debito', 'Transferencia', 'Efectivo'))
                 pagos.append({
-                    "ID_pago": id_pago,
+                    "id_pago": id_pago,
                     "monto": monto,
                     "metodo_pago": metodo_pago,
-                    "ID_viaje": viaje["ID_viaje"]
+                    "id_viaje": viaje["id_viaje"]
                 })
         return pagos
 

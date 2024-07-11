@@ -5,7 +5,7 @@ import datetime
 from td7.data_generator import DataGenerator
 from td7.schema import Schema
 
-EVENTS_PER_DAY = 10_000
+EVENTS_PER_DAY = 40
 
 
 # def generate_data(base_time: str, n: int):
@@ -13,7 +13,6 @@ EVENTS_PER_DAY = 10_000
 
 #     Parameters
 #     ----------
-#     base_time: strpoetry export --without-hashes --format=requirements.txt > requirements.txt
 
 #         Base datetime to start events from.
 #     n : int
@@ -58,23 +57,37 @@ def generate_data(base_time: str, n: int):
     """
     generator = DataGenerator()
     schema = Schema()
-    people = generator.generate_people(100)
-    schema.insert(people, "people")
+    
+    pasajeros = generator.generate_pasajero(10)
+    schema.insert(pasajeros, "pasajero")
 
-    people_sample = schema.get_people(100)
-    sessions = generator.generate_sessions(
-        people_sample,
-        datetime.datetime.fromisoformat(base_time),
-        datetime.timedelta(days=1),
-        n,
-    )
-    schema.insert(sessions, "sessions")
+    conductores = generator.generate_conductor(10)
+    schema.insert(conductores, "conductor")
+
+    vehiculos = generator.generate_vehiculo(15)
+    schema.insert(vehiculos, "vehiculo")
+
+    modelo_vehiculos = generator.generate_modelo_vehiculo(10)
+    schema.insert(modelo_vehiculos, "modelovehiculo")
+
+    conductores_vehiculos = generator.generate_conductor_vehiculo(conductores, vehiculos)    
+    schema.insert(conductores_vehiculos, "conductorvehiculo")
+
+    partnerships = generator.generate_partnership()
+    schema.insert(partnerships, "partnership")
+
+    viajes = generator.generate_viaje(10, conductores_vehiculos, pasajeros)
+    schema.insert(viajes, "viaje")
+
+    pagos = generator.generate_pago(viajes)
+    schema.insert(pagos, "pago")
+    
 
 with DAG(
     "fill_data",
-    start_date=pendulum.datetime(2024, 6, 1, tz="UTC"),
-    schedule_interval="@daily",
-    catchup=True,
+    start_date=pendulum.datetime(2024, 7, 10, tz="UTC"),
+    schedule_interval=datetime.timedelta(minutes=1),
+    catchup=True,   
 ) as dag:
     op = PythonOperator(
         task_id="task",

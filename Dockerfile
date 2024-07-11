@@ -1,4 +1,4 @@
-FROM python:3.11-bookworm
+FROM python:3.11
 
 ENV AIRFLOW_HOME=/opt/airflow
 ENV AIRFLOW_VERSION=2.9.1
