@@ -215,7 +215,6 @@ class DataGenerator:
             elif modelo == "Leaf":
                 return "Hatchback", False, "Economy", "Alto", 5
         return "Unknown", False, "Unknown", "Unknown", 0
-            
 
     def generate_vehiculo(self, n: int) -> Records:
         car_brands = ["Toyota", "Ford", "BMW", "Audi", "Honda", "Mercedes", "Chevrolet", "Volkswagen", "Hyundai", "Nissan"]
@@ -261,11 +260,11 @@ class DataGenerator:
             pasajero = random.choice(pasajeros)
             fecha_hora = self.fake.date_time_this_decade(before_now=True, after_now=False)
             if rango == "manana":
-                random_hour = random.randint(2, 11)  # Hora aleatoria entre 2 y 11
+                random_hour = random.randint(5, 11)  # Hora aleatoria entre 2 y 11
             elif rango == "tarde":
                 random_hour = random.randint(12, 19)  # Hora aleatoria entre 12 y 19
             elif rango == "noche":
-                random_hour = random.choice(list(range(20, 24)) + [0, 1])  # Hora aleatoria entre 20 y 23, 0 y 1
+                random_hour = random.choice(list(range(20, 24)) + [0, 4])  # Hora aleatoria entre 20 y 23, 0 y 1
             else:
                 raise ValueError("Rango no válido. Use 'manana', 'tarde', o 'noche'.")
             fecha_hora = fecha_hora.replace(hour=random_hour, minute=random.randint(0, 59), second=random.randint(0, 59))
@@ -342,7 +341,7 @@ def main():
         print(cv)
 
     # Generar viajes
-    viajes = generator.generate_viaje(10, conductor_vehiculo, pasajeros, rango="manana")
+    viajes = generator.generate_viaje(10, conductor_vehiculo, pasajeros, rango="noche")
     print("\nViajes generados:")
     for viaje in viajes:
         print(viaje)

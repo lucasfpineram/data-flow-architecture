@@ -68,7 +68,7 @@ def generate_data(base_time: str, n: int, rango: str):
     partnerships = generator.generate_partnership()
     schema.insert(partnerships, "partnership")
 
-    modelo_vehiculos = generator.generate_modelo_vehiculo(1000)
+    modelo_vehiculos = generator.generate_modelo_vehiculo(1000) # por que generamos tantos vehiculos?
     schema.insert(modelo_vehiculos, "modelovehiculo")
 
     vehiculos = generator.generate_vehiculo(10)
@@ -87,7 +87,7 @@ def generate_data(base_time: str, n: int, rango: str):
 def choose_branch():
     # current_hour = datetime.datetime.now().hour
     current_hour = random.randint(0, 23)
-    if 2 <= current_hour <= 11:
+    if 5 <= current_hour <= 11:
         return 'mañana'
     elif 12 <= current_hour <= 19:
         return 'tarde'
