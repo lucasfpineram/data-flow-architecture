@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from custom_types import Records
 
 PHONE_PROBABILITY = 0.7
-Faker.seed(1234) # fijo una seed para que genere los mismos datos
+#Faker.seed(1234) # fijo una seed para que genere los mismos datos
 
 # defino una clase con distintos metodos que generan data para nuestras distintas tablas
 class DataGenerator:
@@ -78,7 +78,14 @@ class DataGenerator:
         for _ in range(n):
             marca = self.fake.random_element(elements=car_brands)
             modelo = self.fake.random_element(elements=self.get_modelos(marca))
-            tipo_carroceria, apto_discapacitado, vclase_economica, emision_rating, seguridad_rating = self.get_atributos_modelos(marca, modelo)
+            # Fetch the attributes and handle None cases
+            attributes = self.get_atributos_modelos(marca, modelo)
+            if attributes is None:
+                # Handle the case where attributes could not be fetched
+                tipo_carroceria, apto_discapacitado, vclase_economica, emision_rating, seguridad_rating = "Unknown", False, "Unknown", "Unknown", 0
+            else:
+                tipo_carroceria, apto_discapacitado, vclase_economica, emision_rating, seguridad_rating = attributes
+
             modelo_vehiculos.append(
                 {
                     "modelo": modelo,
@@ -121,7 +128,7 @@ class DataGenerator:
             elif modelo in ["RAV4", "Highlander", "4Runner"]:
                 return "SUV", False, "Mid-range", "Bajo", 4
             elif modelo == "Tacoma":
-                return "Truck", False, "Mid-range", "Medio", 3
+                return "Pick-up", False, "Mid-range", "Medio", 3
             elif modelo == "Prius":
                 return "Sedan", True, "Economy", "Alto", 5
             elif modelo == "Sienna":
@@ -130,7 +137,7 @@ class DataGenerator:
             if modelo in ["Mustang", "Fusion"]:
                 return "Coupe", False, "Performance", "Alto", 3
             elif modelo in ["F-150", "Ranger"]:
-                return "Truck", False, "Mid-range", "Medio", 4
+                return "Pick-up", False, "Mid-range", "Medio", 4
             elif modelo in ["Explorer", "Escape", "Edge"]:
                 return "SUV", False, "Mid-range", "Bajo", 4
             elif modelo in ["Focus", "Expedition"]:
@@ -169,7 +176,7 @@ class DataGenerator:
                 return "Coupe", False, "Performance", "Alto", 5
         elif marca == "Chevrolet":
             if modelo in ["Silverado", "Colorado", "Suburban"]:
-                return "Truck", False, "Mid-range", "Medio", 4
+                return "Pick-up", False, "Mid-range", "Medio", 4
             elif modelo in ["Equinox", "Traverse"]:
                 return "SUV", False, "Mid-range", "Bajo", 4
             elif modelo in ["Malibu", "Impala"]:
@@ -181,7 +188,7 @@ class DataGenerator:
         elif marca == "Volkswagen":
             if modelo in ["Jetta", "Passat", "Arteon"]:
                 return "Sedan", False, "Mid-range", "Medio", 4
-            elif modelo in ["Golf", "Golf GTI"]:
+            elif modelo in ["Golf", "Golf GTI", "Beetle"]:
                 return "Hatchback", False, "Mid-range", "Bajo", 4
             elif modelo in ["Tiguan", "Atlas"]:
                 return "SUV", False, "Mid-range", "Bajo", 4
@@ -192,7 +199,7 @@ class DataGenerator:
                 return "Sedan", False, "Mid-range", "Medio", 4
             elif modelo in ["Tucson", "Santa Fe", "Venue"]:
                 return "SUV", False, "Mid-range", "Bajo", 4
-            elif modelo in ["Palisade"]:
+            elif modelo in ["Palisade", "Kona"]:
                 return "SUV", False, "Luxury", "Alto", 5
             elif modelo in ["Veloster"]:
                 return "Coupe", False, "Performance", "Alto", 4
@@ -204,7 +211,7 @@ class DataGenerator:
             elif modelo in ["Sentra"]:
                 return "Sedan", False, "Economy", "Medio", 3
             elif modelo in ["Pathfinder", "Frontier", "Titan"]:
-                return "Truck", False, "Mid-range", "Medio", 4
+                return "Pick-up", False, "Mid-range", "Medio", 4
             elif modelo == "Leaf":
                 return "Hatchback", False, "Economy", "Alto", 5
         return "Unknown", False, "Unknown", "Unknown", 0
@@ -233,7 +240,7 @@ class DataGenerator:
         '''
         conductor_vehiculo = []
         for conductor in conductores:
-            num_vehiculos = random.randint(1, 4)
+            num_vehiculos = random.randint(1, 2)
             vehiculos_seleccionados = random.sample(vehiculos, num_vehiculos)
             for vehiculo in vehiculos_seleccionados:
                 conductor_vehiculo.append(
@@ -247,9 +254,10 @@ class DataGenerator:
 
     def generate_viaje(self, n, conductores_vehiculos, pasajeros) -> Records:
         viajes = []
+        active_conductores_vehiculos = [cv for cv in conductores_vehiculos if cv['estado']]
         for _ in range(n):
             id_viaje = str(uuid.uuid4())  # Genera un ID único para el viaje
-            conductor_vehiculo = random.choice(conductores_vehiculos)
+            conductor_vehiculo = random.choice(active_conductores_vehiculos)
             pasajero = random.choice(pasajeros)
             
             viajes.append(

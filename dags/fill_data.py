@@ -5,7 +5,7 @@ import datetime
 from td7.data_generator import DataGenerator
 from td7.schema import Schema
 
-EVENTS_PER_DAY = 40
+EVENTS_PER_DAY = 100000
 
 
 # def generate_data(base_time: str, n: int):
@@ -58,25 +58,25 @@ def generate_data(base_time: str, n: int):
     generator = DataGenerator()
     schema = Schema()
     
-    pasajeros = generator.generate_pasajero(10)
+    pasajeros = generator.generate_pasajero(5)
     schema.insert(pasajeros, "pasajero")
 
-    conductores = generator.generate_conductor(10)
+    conductores = generator.generate_conductor(5)
     schema.insert(conductores, "conductor")
-
-    vehiculos = generator.generate_vehiculo(15)
-    schema.insert(vehiculos, "vehiculo")
-
-    modelo_vehiculos = generator.generate_modelo_vehiculo(10)
-    schema.insert(modelo_vehiculos, "modelovehiculo")
-
-    conductores_vehiculos = generator.generate_conductor_vehiculo(conductores, vehiculos)    
-    schema.insert(conductores_vehiculos, "conductorvehiculo")
 
     partnerships = generator.generate_partnership()
     schema.insert(partnerships, "partnership")
 
-    viajes = generator.generate_viaje(10, conductores_vehiculos, pasajeros)
+    modelo_vehiculos = generator.generate_modelo_vehiculo(1000)
+    schema.insert(modelo_vehiculos, "modelovehiculo")
+
+    vehiculos = generator.generate_vehiculo(10)
+    schema.insert(vehiculos, "vehiculo")
+
+    conductores_vehiculos = generator.generate_conductor_vehiculo(conductores, vehiculos)    
+    schema.insert(conductores_vehiculos, "conductorvehiculo")
+
+    viajes = generator.generate_viaje(2, conductores_vehiculos, pasajeros)
     schema.insert(viajes, "viaje")
 
     pagos = generator.generate_pago(viajes)
@@ -85,7 +85,7 @@ def generate_data(base_time: str, n: int):
 
 with DAG(
     "fill_data",
-    start_date=pendulum.datetime(2024, 7, 10, tz="UTC"),
+    start_date=pendulum.datetime(2024, 7, 12, tz="UTC"),
     schedule_interval=datetime.timedelta(minutes=1),
     catchup=True,   
 ) as dag:
@@ -94,3 +94,7 @@ with DAG(
         python_callable=generate_data,
         op_kwargs=dict(n=EVENTS_PER_DAY, base_time="{{ ds }}"),
     )
+
+
+#schedule_interval=datetime.timedelta(minutes=1)
+#schedule_interval="@daily"

@@ -18,26 +18,26 @@
 --     person_passport_number VARCHAR(55) REFERENCES people
 -- );
 
---DROP TABLE pasajero CASCADE;
---DROP TABLE conductor CASCADE;
---DROP TABLE partnership CASCADE;
---DROP TABLE modelovehiculo CASCADE;
---DROP TABLE vehiculo CASCADE;
---DROP TABLE conductorvehiculo CASCADE;
---DROP TABLE viaje CASCADE;
---DROP TABLE pago CASCADE;
+-- DROP TABLE pasajero CASCADE;
+-- DROP TABLE conductor CASCADE;
+-- DROP TABLE partnership CASCADE;
+-- DROP TABLE modelovehiculo CASCADE;
+-- DROP TABLE vehiculo CASCADE;
+-- DROP TABLE conductorvehiculo CASCADE;
+-- DROP TABLE viaje CASCADE;
+-- DROP TABLE pago CASCADE;
 
 CREATE TABLE IF NOT EXISTS pasajero (
- "ID_pasajero" VARCHAR(200) PRIMARY KEY,
+ id_pasajero VARCHAR(200) PRIMARY KEY,
  nombre VARCHAR(50),
- telefono VARCHAR(20),
+ telefono VARCHAR(30),
  correo_electronico VARCHAR(50)
 );
 
 CREATE TABLE IF NOT EXISTS conductor (
- "ID_conductor" VARCHAR(200) PRIMARY KEY,
+ id_conductor VARCHAR(200) PRIMARY KEY,
  nombre VARCHAR(50),
- telefono VARCHAR(20),
+ telefono VARCHAR(30),
  correo_electronico VARCHAR(50)
 );
 
@@ -48,10 +48,10 @@ CREATE TABLE IF NOT EXISTS partnership (
 
 CREATE TABLE IF NOT EXISTS modelovehiculo (
  modelo VARCHAR(50) PRIMARY KEY,
- tipo_carroceria VARCHAR(50) CONSTRAINT selec_carro CHECK (tipo_carroceria IN ('Sedan', 'Hatchback', 'Suv', 'Coupe', 'Pick-up', 'Roadster', 'Minivan')),
+ tipo_carroceria VARCHAR(50) CONSTRAINT selec_carro CHECK (tipo_carroceria IN ('Sedan', 'Hatchback', 'SUV', 'Coupe', 'Pick-up', 'Roadster', 'Minivan')),
  apto_discapacitado BOOLEAN NOT NULL,
  vclase_economica VARCHAR(50) CONSTRAINT economic_level CHECK (vclase_economica IN ('Economy', 'Mid-range', 'Luxury', 'Performance', 'Exotic')),
- emision_rating VARCHAR(50) CONSTRAINT co2_levels CHECK (emision_rating IN ('Cero', 'Bajo', 'Alto')),
+ emision_rating VARCHAR(50) CONSTRAINT co2_levels CHECK (emision_rating IN ('Cero', 'Medio', 'Bajo', 'Alto')),
  seguridad_rating INT CONSTRAINT test_results CHECK (seguridad_rating >= 0 AND seguridad_rating  <= 5 AND seguridad_rating = FLOOR(seguridad_rating)),
  marca VARCHAR(50),
  FOREIGN KEY (marca) REFERENCES partnership(marca)
@@ -65,34 +65,34 @@ CREATE TABLE IF NOT EXISTS vehiculo (
 );
 
 CREATE TABLE IF NOT EXISTS conductorvehiculo (
- "ID_conductor" VARCHAR(200),
+ id_conductor VARCHAR(200),
  patente VARCHAR(20),
  estado BOOLEAN NOT NULL,
- PRIMARY KEY ("ID_conductor", patente),
- FOREIGN KEY ("ID_conductor") REFERENCES conductor("ID_conductor"),
+ PRIMARY KEY (id_conductor, patente),
+ FOREIGN KEY (id_conductor) REFERENCES conductor(id_conductor),
  FOREIGN KEY (patente) REFERENCES vehiculo(patente)
 );
 
 CREATE TABLE IF NOT EXISTS viaje (
- "ID_viaje" INT PRIMARY KEY,
- origen VARCHAR(50),
- destino VARCHAR(50),
+ id_viaje VARCHAR(200) PRIMARY KEY,
+ origen VARCHAR(100),
+ destino VARCHAR(100),
  fecha_hora TIMESTAMP NOT NULL,
- estado VARCHAR(20) CONSTRAINT estado_viaje CHECK (estado IN ('completado', 'cancelado')),
+ estado VARCHAR(20) CONSTRAINT estado_viaje CHECK (estado IN ('Completado', 'Cancelado')),
  calificacion INT CONSTRAINT calific_rango CHECK (calificacion >= 0 AND calificacion  <= 5 AND  calificacion = FLOOR(calificacion)),
- "ID_pasajero" VARCHAR(200),
- "ID_conductor" VARCHAR(200),
+ id_pasajero VARCHAR(200),
+ id_conductor VARCHAR(200),
  patente VARCHAR(20),
- FOREIGN KEY ("ID_pasajero") REFERENCES pasajero("ID_pasajero"),
- FOREIGN KEY ("ID_conductor", patente) REFERENCES conductorvehiculo("ID_conductor", patente)
+ FOREIGN KEY (id_pasajero) REFERENCES pasajero(id_pasajero),
+ FOREIGN KEY (id_conductor, patente) REFERENCES conductorvehiculo(id_conductor, patente)
 );
 
 CREATE TABLE IF NOT EXISTS pago (
- "ID_pago" VARCHAR(200) PRIMARY KEY,
+ id_pago VARCHAR(200) PRIMARY KEY,
  monto DECIMAL(10, 2) CONSTRAINT nodinero_neg CHECK (monto >= 0),
  metodo_pago VARCHAR(50),
- "ID_viaje" INT,
- FOREIGN KEY ("ID_viaje") REFERENCES viaje("ID_viaje")
+ id_viaje VARCHAR(200),
+ FOREIGN KEY (id_viaje) REFERENCES viaje(id_viaje)
 );
 
 CREATE OR REPLACE FUNCTION verificar_estado_conductor_vehiculo()
@@ -102,7 +102,7 @@ BEGIN
  -- Verificar si existe un registro en ConductorVehiculo que cumpla las condiciones
  IF NOT EXISTS (
    SELECT 1 FROM conductorvehiculo
-   WHERE "ID_conductor" = NEW."ID_conductor"
+   WHERE id_conductor = NEW.id_conductor
      AND patente = NEW.patente
      AND estado = TRUE
  ) THEN
@@ -117,6 +117,59 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER verificar_estado_conductor_vehiculo_trigger
 BEFORE INSERT OR UPDATE ON viaje
 FOR EACH ROW EXECUTE FUNCTION verificar_estado_conductor_vehiculo();
+
+CREATE OR REPLACE FUNCTION verificar_marca_unica()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Check if the marca already exists in the partnership table
+  IF EXISTS (SELECT 1 FROM partnership WHERE marca = NEW.marca) THEN
+    -- Raise an exception if the marca exists, rejecting the insertion
+    RAISE NOTICE 'La marca % ya existe en la tabla partnership.', NEW.marca;
+    -- Return NULL to cancel the insert but not raise an exception
+    RETURN NULL;
+  END IF;
+  RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Handle any other exceptions
+    RAISE NOTICE 'An error occurred: %', SQLERRM;
+    -- You can choose to log the error or perform other actions here
+    RETURN NULL; -- Optionally cancel the insert if you want to handle other exceptions
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER verificar_marca_unica_trigger
+BEFORE INSERT ON partnership
+FOR EACH ROW EXECUTE FUNCTION verificar_marca_unica();
+
+
+-- Create the function to check for duplicates
+CREATE OR REPLACE FUNCTION discard_duplicate_modelo()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if a record with the same modelo already exists
+    IF EXISTS (SELECT 1 FROM modelovehiculo WHERE modelo = NEW.modelo) THEN
+        -- Log a notice that the duplicate modelo was found
+        RAISE NOTICE 'El modelo % ya existe en la tabla modelovehiculo. La entrada se descarta.', NEW.modelo;
+        -- Discard the new entry by returning NULL
+        RETURN NULL;
+    END IF;
+    -- If no duplicate is found, proceed with the insert
+    RETURN NEW;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Handle any other exceptions
+        RAISE NOTICE 'An error occurred: %', SQLERRM;
+        -- You can choose to log the error or perform other actions here
+        RETURN NULL; -- Optionally cancel the insert if you want to handle other exceptions
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create the trigger that calls the function before insert
+CREATE TRIGGER discard_duplicate_modelo_trigger
+BEFORE INSERT ON modelovehiculo
+FOR EACH ROW
+EXECUTE FUNCTION discard_duplicate_modelo();
 
 
 -- Roles
