@@ -252,25 +252,36 @@ class DataGenerator:
                 )
         return conductor_vehiculo
 
-    def generate_viaje(self, n, conductores_vehiculos, pasajeros) -> Records:
+    def generate_viaje(self, n, conductores_vehiculos, pasajeros, rango) -> Records:
         viajes = []
         active_conductores_vehiculos = [cv for cv in conductores_vehiculos if cv['estado']]
         for _ in range(n):
             id_viaje = str(uuid.uuid4())  # Genera un ID único para el viaje
             conductor_vehiculo = random.choice(active_conductores_vehiculos)
             pasajero = random.choice(pasajeros)
-            
+            fecha_hora = self.fake.date_time_this_decade(before_now=True, after_now=False)
+            if rango == "manana":
+                random_hour = random.randint(2, 11)  # Hora aleatoria entre 2 y 11
+            elif rango == "tarde":
+                random_hour = random.randint(12, 19)  # Hora aleatoria entre 12 y 19
+            elif rango == "noche":
+                random_hour = random.choice(list(range(20, 24)) + [0, 1])  # Hora aleatoria entre 20 y 23, 0 y 1
+            else:
+                raise ValueError("Rango no válido. Use 'manana', 'tarde', o 'noche'.")
+            fecha_hora = fecha_hora.replace(hour=random_hour, minute=random.randint(0, 59), second=random.randint(0, 59))
+            fecha_hora_str = fecha_hora.strftime('%Y-%m-%d %H:%M:%S')
             viajes.append(
                 {
                     "id_viaje": id_viaje,
                     "origen": self.fake.address(),
                     "destino": self.fake.address(),
-                    "fecha_hora": self.fake.date_time_this_decade(before_now=True, after_now=False),  # fecha aleatoria dentro de la última década
+                    "fecha_hora": fecha_hora_str,  # fecha aleatoria dentro del rango (mañana, tarde o noche)
                     "estado": random.choice(['Completado', 'Cancelado']),
                     "calificacion": random.randint(0, 5),
                     "id_pasajero": pasajero["id_pasajero"],
                     "id_conductor": conductor_vehiculo["id_conductor"],
-                    "patente": conductor_vehiculo["patente"]
+                    "patente": conductor_vehiculo["patente"],
+                    "rango": rango
                 }
             )
         return viajes
@@ -331,7 +342,7 @@ def main():
         print(cv)
 
     # Generar viajes
-    viajes = generator.generate_viaje(10, conductor_vehiculo, pasajeros)
+    viajes = generator.generate_viaje(10, conductor_vehiculo, pasajeros, rango="manana")
     print("\nViajes generados:")
     for viaje in viajes:
         print(viaje)

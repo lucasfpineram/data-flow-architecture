@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS viaje (
  fecha_hora TIMESTAMP NOT NULL,
  estado VARCHAR(20) CONSTRAINT estado_viaje CHECK (estado IN ('Completado', 'Cancelado')),
  calificacion INT CONSTRAINT calific_rango CHECK (calificacion >= 0 AND calificacion  <= 5 AND  calificacion = FLOOR(calificacion)),
+ rango VARCHAR(20),
  id_pasajero VARCHAR(200),
  id_conductor VARCHAR(200),
  patente VARCHAR(20),

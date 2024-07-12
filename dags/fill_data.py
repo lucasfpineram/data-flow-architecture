@@ -1,5 +1,6 @@
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import PythonOperator, BranchPythonOperator
+import random
 import pendulum
 import datetime
 from td7.data_generator import DataGenerator
@@ -44,7 +45,7 @@ EVENTS_PER_DAY = 100000
 #         op_kwargs=dict(n=EVENTS_PER_DAY, base_time="{{ ds }}"),
 #     )
 
-def generate_data(base_time: str, n: int):
+def generate_data(base_time: str, n: int, rango: str):
     """Generates synth data and saves to DB.
 
     Parameters
@@ -76,24 +77,59 @@ def generate_data(base_time: str, n: int):
     conductores_vehiculos = generator.generate_conductor_vehiculo(conductores, vehiculos)    
     schema.insert(conductores_vehiculos, "conductorvehiculo")
 
-    viajes = generator.generate_viaje(2, conductores_vehiculos, pasajeros)
+    viajes = generator.generate_viaje(2, conductores_vehiculos, pasajeros, rango)
     schema.insert(viajes, "viaje")
 
     pagos = generator.generate_pago(viajes)
     schema.insert(pagos, "pago")
     
+# Función para seleccionar la rama
+def choose_branch():
+    # current_hour = datetime.datetime.now().hour
+    current_hour = random.randint(0, 23)
+    if 2 <= current_hour <= 11:
+        return 'mañana'
+    elif 12 <= current_hour <= 19:
+        return 'tarde'
+    else: # de 20 a 1
+        return 'noche'
 
 with DAG(
     "fill_data",
     start_date=pendulum.datetime(2024, 7, 12, tz="UTC"),
-    schedule_interval=datetime.timedelta(minutes=1),
+    schedule_interval=datetime.timedelta(minutes=1), 
     catchup=True,   
 ) as dag:
-    op = PythonOperator(
-        task_id="task",
-        python_callable=generate_data,
-        op_kwargs=dict(n=EVENTS_PER_DAY, base_time="{{ ds }}"),
+    
+    branch_op = BranchPythonOperator(
+        task_id='branch_task',
+        python_callable=choose_branch,
+        provide_context=True,
     )
+
+    ingestion_task_morning = PythonOperator(
+        task_id='mañana',
+        python_callable=generate_data,
+        #argumentos que le paso a mi funcion generate_data
+        op_kwargs=dict(n=EVENTS_PER_DAY, base_time="{{ ds }}", rango = "manana"), # tengo que pasarle a generate_data "mañana" como parametro
+    )
+    
+    ingestion_task_afternoon = PythonOperator(
+        task_id='tarde',
+        python_callable=generate_data,
+        op_kwargs=dict(n=EVENTS_PER_DAY, base_time="{{ ds }}", rango = "tarde"),
+    )
+    
+    ingestion_task_night = PythonOperator(
+        task_id='noche',
+        python_callable=generate_data,
+        op_kwargs=dict(n=EVENTS_PER_DAY, base_time="{{ ds }}", rango = "noche"),
+    )
+    
+    # Definir las dependencias
+    branch_op >> [ingestion_task_morning, ingestion_task_afternoon, ingestion_task_night]
+
+
 
 
 #schedule_interval=datetime.timedelta(minutes=1)
