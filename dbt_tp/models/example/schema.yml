@@ -2,19 +2,33 @@ version: 2
 
 models:
   - name: my_first_dbt_model
-    description: "A starter dbt model"
+    description: "Aggregate data of trips by vehicle model and range"
     columns:
-      - name: id
-        description: "The primary key for this table"
-        data_tests:
-          - unique
+      - name: modelo
+        description: "The model of the vehicle"
+        tests:
           - not_null
+      - name: rango
+        description: "The range category of the trip"
+        tests:
+          - not_null
+      - name: total_viajes
+        description: "Total number of completed trips for this model and range"
+      - name: avg_monto
+        description: "Average payment amount for trips in this model and range"
+    tests:
+      - unique:
+          columns: ["modelo", "rango"]
+      - not_null:
+          columns: ["modelo", "rango"]
 
   - name: my_second_dbt_model
-    description: "A starter dbt model"
+    description: "Average rating by trip range for completed trips"
     columns:
-      - name: id
-        description: "The primary key for this table"
-        data_tests:
-          - unique
+      - name: rango
+        description: "The range category of the trip"
+        tests:
           - not_null
+          - unique
+      - name: avg_calificacion
+        description: "Average rating for trips in this range"
