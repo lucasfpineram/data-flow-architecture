@@ -64,3 +64,10 @@ docker compose run dbt <COMMAND>
 ## Ver documentación de DBT
 
 En la UI de Airflow -> `Browse` --> `dbt Docs`
+
+## Coamandos para run
+
+docker-compose up -d
+docker-compose run dbt deps
+
+
