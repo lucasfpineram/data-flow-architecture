@@ -9,42 +9,6 @@ from td7.schema import Schema
 EVENTS_PER_DAY = 100000
 
 
-# def generate_data(base_time: str, n: int):
-#     """Generates synth data and saves to DB.
-
-#     Parameters
-#     ----------
-
-#         Base datetime to start events from.
-#     n : int
-#         Number of events to generate.
-#     """
-#     generator = DataGenerator()
-#     schema = Schema()
-#     people = generator.generate_people(100)
-#     schema.insert(people, "people")
-
-#     people_sample = schema.get_people(100)
-#     sessions = generator.generate_sessions(
-#         people_sample,
-#         datetime.datetime.fromisoformat(base_time),
-#         datetime.timedelta(days=1),
-#         n,
-#     )
-#     schema.insert(sessions, "sessions")
-
-# with DAG(
-#     "fill_data",
-#     start_date=pendulum.datetime(2024, 6, 1, tz="UTC"),
-#     schedule_interval="@daily",
-#     catchup=True,
-# ) as dag:
-#     op = PythonOperator(
-#         task_id="task",
-#         python_callable=generate_data,
-#         op_kwargs=dict(n=EVENTS_PER_DAY, base_time="{{ ds }}"),
-#     )
-
 def generate_data(base_time: str, n: int, rango: str):
     """Generates synth data and saves to DB.
 
@@ -68,7 +32,7 @@ def generate_data(base_time: str, n: int, rango: str):
     partnerships = generator.generate_partnership()
     schema.insert(partnerships, "partnership")
 
-    modelo_vehiculos = generator.generate_modelo_vehiculo(1000) # por que generamos tantos vehiculos?
+    modelo_vehiculos = generator.generate_modelo_vehiculo(1000) # son 90 max en realidad, necesito todas los modelos en la base para evitar errores de inserción en la tabla vehiculo
     schema.insert(modelo_vehiculos, "modelovehiculo")
 
     vehiculos = generator.generate_vehiculo(10)
@@ -86,18 +50,18 @@ def generate_data(base_time: str, n: int, rango: str):
 # Función para seleccionar la rama
 def choose_branch():
     # current_hour = datetime.datetime.now().hour
-    current_hour = random.randint(0, 23)
+    current_hour = random.randint(0, 23)    # para poder testear
     if 5 <= current_hour <= 11:
         return 'mañana'
     elif 12 <= current_hour <= 19:
         return 'tarde'
-    else: # de 20 a 1
+    else: # de 20 a 5
         return 'noche'
 
 with DAG(
     "fill_data",
     start_date=pendulum.datetime(2024, 7, 12, tz="UTC"),
-    schedule_interval=datetime.timedelta(minutes=1), 
+    schedule_interval= datetime.timedelta(minutes=1), 
     catchup=True,   
 ) as dag:
     
@@ -131,5 +95,3 @@ with DAG(
 
 
 
-#schedule_interval=datetime.timedelta(minutes=1)
-#schedule_interval="@daily"

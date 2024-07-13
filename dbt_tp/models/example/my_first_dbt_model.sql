@@ -22,10 +22,13 @@ SELECT
     modelo,
     rango,
     COUNT(id_viaje) AS total_viajes,
-    AVG(monto) AS avg_monto
+    ROUND(AVG(monto), 2) AS avg_monto
 FROM
     viajes_data
 GROUP BY
     modelo, rango
 ORDER BY
-    total_viajes DESC;
+    total_viajes DESC,
+    avg_monto DESC
+
+

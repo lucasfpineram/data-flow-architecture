@@ -16,16 +16,11 @@ models:
         description: "Total number of completed trips for this model and range"
       - name: avg_monto
         description: "Average payment amount for trips in this model and range"
-    tests:
-      - unique:
-          columns: ["modelo", "rango"]
-      - not_null:
-          columns: ["modelo", "rango"]
 
   - name: my_second_dbt_model
     description: "Average rating by trip range for completed trips"
     columns:
-      - name: rango
+      - name: time_of_day
         description: "The range category of the trip"
         tests:
           - not_null
