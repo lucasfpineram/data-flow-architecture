@@ -50,7 +50,7 @@ def generate_data(base_time: str, n: int, rango: str):
 # Función para seleccionar la rama
 def choose_branch():
     # current_hour = datetime.datetime.now().hour
-    current_hour = random.randint(0, 23)    # para poder testear
+    current_hour = random.randint(0, 23)    # para poder testear todos los rangos
     if 5 <= current_hour <= 11:
         return 'mañana'
     elif 12 <= current_hour <= 19:
